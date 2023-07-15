@@ -16,19 +16,19 @@ printUsageThenDie() {
     JWT_ALGORITHMS="$JWT_ALGORITHMS | $_JWT_ALGO"
   done
 
-	echo "Usage: ./$SCRIPT_NAME [<option=value>...]"
-	echo -e "\t[<option=value>...] (optional): one or more options"
-	echo -e "\t\t-h, --help: print help"
+  echo "Usage: ./$SCRIPT_NAME [<option=value>...]"
+  echo -e "\t[<option=value>...] (optional): one or more options"
+  echo -e "\t\t-h, --help: print help"
   echo -e "\t\t-len, --key-length: key length in bytes (not for ES algorithm)"
-	echo -e "\t\t-f, --file: the output filename"
+  echo -e "\t\t-f, --file: the output filename"
   echo -e "\t\t-alg, --algorithm: JWT algorithm (HS is not supported yet, it's a symmetric encryption)"
   echo -e "\t\t\t$JWT_ALGORITHMS"
-	echo
-	echo "Example: ./$SCRIPT_NAME --algorithm=RS256 --key-length=2048 --file=key_rsa256"
+  echo
+  echo "Example: ./$SCRIPT_NAME --algorithm=RS256 --key-length=2048 --file=key_rsa256"
   echo
   echo "For safety reason this script generates encryption keys and put those keys in the same directory where this script lives"
-	echo
-	exit "$EXIT_CODE"
+  echo
+  exit "$EXIT_CODE"
 }
 
 # --- Constants ---
@@ -47,19 +47,19 @@ DEF_FILE_PREFIX="jwt_"
 
 ARGS=("$@")
 for OPTION in "${ARGS[@]}"; do
-	if [[ $OPTION =~ ^-alg=.* || $OPTION =~ ^--algorithm=.* ]]; then
-		IN_JWT_ALGO=$(echo "$OPTION" | cut -d '=' -f 2-)
-	elif [[ $OPTION =~ ^-len=.* || $OPTION =~ ^--key-length=.* ]]; then
-		IN_KEY_LENGTH=$(echo "$OPTION" | cut -d '=' -f 2-)
-	elif [[ $OPTION =~ ^-f=.* || $OPTION =~ ^--file=.* ]]; then
-		IN_FILE=$(echo "$OPTION" | cut -d '=' -f 2-)
-	elif [[ $OPTION =~ ^-h || $OPTION =~ ^--help ]]; then
-		printUsageThenDie 0
-	else
+  if [[ $OPTION =~ ^-alg=.* || $OPTION =~ ^--algorithm=.* ]]; then
+    IN_JWT_ALGO=$(echo "$OPTION" | cut -d '=' -f 2-)
+  elif [[ $OPTION =~ ^-len=.* || $OPTION =~ ^--key-length=.* ]]; then
+    IN_KEY_LENGTH=$(echo "$OPTION" | cut -d '=' -f 2-)
+  elif [[ $OPTION =~ ^-f=.* || $OPTION =~ ^--file=.* ]]; then
+    IN_FILE=$(echo "$OPTION" | cut -d '=' -f 2-)
+  elif [[ $OPTION =~ ^-h || $OPTION =~ ^--help ]]; then
+    printUsageThenDie 0
+  else
     echo "Encounter invalid option: $OPTION"
     echo
     printUsageThenDie 1
-	fi
+  fi
 done
 
 # Algorithm
