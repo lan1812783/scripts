@@ -9,7 +9,7 @@ echo
 # --- Help ---
 
 printUsageThenDie() {
-	EXIT_CODE=$1
+  EXIT_CODE=$1
 
   for _JWT_ALGO in "${ALGORITHMS[@]}"; do
     [[ -z $JWT_ALGORITHMS ]] && JWT_ALGORITHMS=$_JWT_ALGO && continue
