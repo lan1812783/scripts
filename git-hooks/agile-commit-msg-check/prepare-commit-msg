@@ -1,0 +1,18 @@
+#!/bin/bash
+
+MESSAGE=$(cat "$1")
+TICKET=$(git rev-parse --abbrev-ref HEAD | grep -Eo "\w+-[0-9]+_" | cut -d "_" -f 1)
+
+# if [[ "$TICKET" =~ [a-z]+ ]]; then
+#   echo "Ticket $TICKET contains lowercase character(s) in its name!"
+#   echo
+# fi
+
+if [[ -z "$TICKET" || "$MESSAGE" == "$TICKET "* ]]; then
+  exit 0
+fi
+
+echo "Ticket not found in commit message!"
+echo "Add prefix [$TICKET] to commit message"
+echo
+echo "[$TICKET] $MESSAGE" >"$1"

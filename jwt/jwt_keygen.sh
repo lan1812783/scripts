@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_NAME=$(basename "$(readlink -f "$0")")
+SCRIPT_EXECUTION_PATH=$0
 OUT_DIR=$(dirname "$(readlink -f "$0")")
 # mkdir -p "$OUT_DIR" # in case the output directory is different from where this script lives
 
@@ -16,15 +16,15 @@ printUsageThenDie() {
     JWT_ALGORITHMS="$JWT_ALGORITHMS | $_JWT_ALGO"
   done
 
-  echo "Usage: ./$SCRIPT_NAME [<option=value>...]"
-  echo -e "\t[<option=value>...] (optional): one or more options"
+  echo "Usage: ./$SCRIPT_EXECUTION_PATH [<option=value>...]"
+  echo -e "\t[<option[=value>...]]: one or more options"
   echo -e "\t\t-h, --help: print help"
   echo -e "\t\t-len, --key-length: key length in bytes (not for ES algorithm)"
   echo -e "\t\t-f, --file: the output filename"
   echo -e "\t\t-alg, --algorithm: JWT algorithm (HS is not supported yet, it's a symmetric encryption)"
   echo -e "\t\t\t$JWT_ALGORITHMS"
   echo
-  echo "Example: ./$SCRIPT_NAME --algorithm=RS256 --key-length=2048 --file=key_rsa256"
+  echo "Example: ./$SCRIPT_EXECUTION_PATH --algorithm=RS256 --key-length=2048 --file=key_rsa256"
   echo
   echo "For safety reason this script generates encryption keys and put those keys in the same directory where this script lives"
   echo
@@ -53,7 +53,7 @@ for OPTION in "${ARGS[@]}"; do
     IN_KEY_LENGTH=$(echo "$OPTION" | cut -d '=' -f 2-)
   elif [[ $OPTION =~ ^-f=.* || $OPTION =~ ^--file=.* ]]; then
     IN_FILE=$(echo "$OPTION" | cut -d '=' -f 2-)
-  elif [[ $OPTION =~ ^-h || $OPTION =~ ^--help ]]; then
+  elif [[ $OPTION =~ ^-h$ || $OPTION =~ ^--help$ ]]; then
     printUsageThenDie 0
   else
     echo "Encounter invalid option: $OPTION"

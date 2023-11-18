@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# --- Java checkstyle ---
+
+# https://github.com/yangziwen/diff-check/blob/master/hooks/pre-commit
+"$(dirname "$0")"/pre-commit-checkstyle "$@"
+result=$?
+if [ $result -ne 0 ]; then
+  exit $result
+fi

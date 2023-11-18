@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# --- Agile commit message check ---
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+# REGEX="^(master|main|release|develop|((feature|bigfeature|task|bugfix|hotfix)\/[a-zA-Z]+-[0-9]+_.+))$"
+REGEX="^(master|main|release|develop|((feature|bigfeature|task|bugfix|hotfix)\/[A-Z]+-[0-9]+_.+))$"
+
+# Ex.:
+#   Valid branch name: bigfeature/ZAB-5_account_search
+#   Invalid branch name:
+#     bigfeature/ZaB-5_account_search
+#     bigfeature/ZaB-5-A_account_search
+#     aloha/ZAB-5_account_search
+#     ...
+
+if ! [[ $BRANCH =~ $REGEX ]]; then
+  echo "Your commit was rejected due to invalid branch name"
+  echo "Please rename your branch with $REGEX syntax"
+  echo
+  exit 1
+fi
