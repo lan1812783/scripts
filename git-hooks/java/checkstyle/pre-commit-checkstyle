@@ -39,8 +39,9 @@ java -jar "$CHECKSTYLE_JAR" -c "$CHECKSTYLE_CONFIG" "$GIT_ROOT_DIR" --git-dir "$
 result=$?
 if [ $result -ne 0 ]; then
   echo "Please fix the checkstyle problems before submitting the commit!"
-  echo
   exit $result
 fi
+
+echo
 
 exit 0

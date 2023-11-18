@@ -33,6 +33,7 @@ printUsageThenDie() {
   echo -e "\t\t\tPossible values:"
   echo -e "\t\t\t\tEmbedded: /sun_checks.xml (default), /google_checks.xml"
   echo -e "\t\t\t\tCustom configuration file: absolute path to the custom configuration file"
+  echo -e "\t\t-u, --uninstall: remove all setup files from the target repository, if this option is specified along with other options, it would be executed first"
   echo
   echo "Example: ./$SCRIPT_EXECUTION_PATH --agile-commit-msg-check --checkstyle --checkstyle-config-path=/google_checks.xml path/to/git/repo"
   echo
@@ -43,6 +44,7 @@ printUsageThenDie() {
 
 AGILE_COMMIT_MSG_CHECK=false
 CHECKSTYLE=false
+UNINSTALL=false
 
 # --- Argument processing ---
 
@@ -56,6 +58,8 @@ for OPTION in "${ARGS[@]}"; do
     CHECKSTYLE_CONFIG_PATH=$(echo "$OPTION" | cut -d '=' -f 2-)
   elif [[ $OPTION =~ ^-h$ || $OPTION =~ ^--help$ ]]; then
     printUsageThenDie 0
+  elif [[ $OPTION =~ ^-u$ || $OPTION =~ ^--uninstall$ ]]; then
+    UNINSTALL=true
   else
     if [[ -z $TARGET_REPO_PATH ]]; then
       # Repository path
@@ -70,10 +74,6 @@ done
 [[ -z "$TARGET_REPO_PATH" ]] && panic "Please supply a git repository" 1
 [[ ! -d "$TARGET_REPO_PATH" ]] && panic "$TARGET_REPO_PATH does not exist or is not a directory" 1
 [[ ! -d "$TARGET_REPO_PATH/.git" ]] && panic "$TARGET_REPO_PATH is not a git repository" 1
-# Validate if target repository has atleast one commit
-if ! git -C "$TARGET_REPO_PATH" rev-parse HEAD 1>/dev/null 2>&1; then
-  panic "The git repository at $TARGET_REPO_PATH does not have any commit yet" 1
-fi
 # Validate git hooks folder
 TARGET_GIT_HOOKS_PATH=$(git config --get core.hooksPath)
 [[ ! -d "$TARGET_GIT_HOOKS_PATH" ]] && TARGET_GIT_HOOKS_PATH="$TARGET_REPO_PATH/.git/hooks"
@@ -83,6 +83,7 @@ SUN_CHECKS="/sun_checks.xml"
 GOOGLE_CHECKS="/google_checks.xml"
 [[ "$CHECKSTYLE_CONFIG_PATH" != "$SUN_CHECKS" &&
   "$CHECKSTYLE_CONFIG_PATH" != "$GOOGLE_CHECKS" &&
+  -n $CHECKSTYLE_CONFIG_PATH &&
   ! -f "$CHECKSTYLE_CONFIG_PATH" ]] &&
   panic "$CHECKSTYLE_CONFIG_PATH does not exist or is not a file" 1
 
@@ -94,14 +95,30 @@ info() {
   echo "Agile commit message check: $AGILE_COMMIT_MSG_CHECK"
   echo "Checkstyle: $CHECKSTYLE"
   [[ $CHECKSTYLE == true && -n "$CHECKSTYLE_CONFIG_PATH" ]] && echo "Checkstyle config path: $CHECKSTYLE_CONFIG_PATH"
+  echo "Uninstall: $UNINSTALL"
   echo "================================="
   echo
 }
 info
 
+# --- Uninstall ---
+
+if [[ $UNINSTALL == true ]]; then
+  rm -vf \
+    "$TARGET_GIT_HOOKS_PATH/pre-commit" \
+    "$TARGET_GIT_HOOKS_PATH/prepare-commit-msg" \
+    "$TARGET_GIT_HOOKS_PATH/diff-checkstyle.jar" \
+    "$TARGET_GIT_HOOKS_PATH/pre-commit-checkstyle"
+fi
+
 # --- Agile commit msg check ---
 
 if [[ $AGILE_COMMIT_MSG_CHECK == true ]]; then
+  # Validate if target repository has atleast one commit
+  if ! git -C "$TARGET_REPO_PATH" rev-parse HEAD 1>/dev/null 2>&1; then
+    panic "The git repository at $TARGET_REPO_PATH does not have any commit yet" 1
+  fi
+
   AGILE_HOOK_SCRIPTS=$SCRIPT_DIR/agile-commit-msg-check
   chmod +x -R "$AGILE_HOOK_SCRIPTS"
 
@@ -128,7 +145,6 @@ if [[ $CHECKSTYLE == true ]]; then
     sed -i "s|CHECKSTYLE_CONFIG=.*|CHECKSTYLE_CONFIG=$CHECKSTYLE_CONFIG_PATH|" "$TARGET_GIT_HOOKS_PATH/pre-commit-checkstyle"
 fi
 
-echo
 echo "=========="
 echo "Setup done"
 echo "=========="
