@@ -1,0 +1,25 @@
+#!/bin/bash
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+REGEX="^(develop|master|release|((feature|bigfeature|task|bugfix|hotfix)\/[A-Z]+-[0-9]+_.+))$"
+
+# Ex.:
+#   Valid branch name: bigfeature/ZAB-5_account_search
+#   Invalid branch name:
+#     bigfeature/ZaB-5_account_search
+#     bigfeature/ZaB-5-A_account_search
+#     aloha/ZAB-5_account_search
+#     ...
+
+if ! [[ $BRANCH =~ $REGEX ]]; then
+  echo "> Your commit was rejected due to invalid branch name"
+  echo "> Please rename your branch with $REGEX syntax"
+  exit 1
+fi
+
+# https://github.com/yangziwen/diff-check/blob/master/hooks/pre-commit
+"$(dirname "$0")"/pre-commit-checkstyle "$@"
+result=$?
+if [ $result -ne 0 ]; then
+    exit $result
+fi
