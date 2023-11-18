@@ -33,7 +33,7 @@ printUsageThenDie() {
   echo -e "\t\t\tPossible values:"
   echo -e "\t\t\t\tEmbedded: /sun_checks.xml (default), /google_checks.xml"
   echo -e "\t\t\t\tCustom configuration file: absolute path to the custom configuration file"
-  echo -e "\t\t-u, --uninstall: remove all setup files from the target repository, if this option is specified along with other options, it would be executed first"
+  echo -e "\t\t-u, --uninstall: remove all setup files from the target repository (regardless of agile or checkstyle), if this option is specified along with other options, it would be executed first"
   echo
   echo "Example: ./$SCRIPT_EXECUTION_PATH --agile-commit-msg-check --checkstyle --checkstyle-config-path=/google_checks.xml path/to/git/repo"
   echo
