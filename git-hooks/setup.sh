@@ -24,7 +24,7 @@ printUsageThenDie() {
   echo
   echo "Description: utillty to help setup git hooks (branch & commit naming violation checks, incremental checkstyle (java), etc) for a git repository"
   echo
-  echo "Usage: ./$SCRIPT_EXECUTION_PATH [<option=value>...] <path to git repository>"
+  echo "Usage: $SCRIPT_EXECUTION_PATH [<option=value>...] <path to git repository>"
   echo -e "\t[<option[=value>...]]: one or more options"
   echo -e "\t\t-h, --help: print help"
   echo -e "\t\t-agile, --agile-commit-msg-check: setup agile commit message check"
@@ -35,7 +35,7 @@ printUsageThenDie() {
   echo -e "\t\t\t\tCustom configuration file: absolute path to the custom configuration file"
   echo -e "\t\t-u, --uninstall: remove all setup files from the target repository (regardless of agile or checkstyle), if this option is specified along with other options, it would be executed first"
   echo
-  echo "Example: ./$SCRIPT_EXECUTION_PATH --agile-commit-msg-check --checkstyle --checkstyle-config-path=/google_checks.xml path/to/git/repo"
+  echo "Example: $SCRIPT_EXECUTION_PATH --agile-commit-msg-check --checkstyle --checkstyle-config-path=/google_checks.xml path/to/git/repo"
   echo
   exit "$EXIT_CODE"
 }

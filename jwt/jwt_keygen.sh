@@ -16,7 +16,7 @@ printUsageThenDie() {
     JWT_ALGORITHMS="$JWT_ALGORITHMS | $_JWT_ALGO"
   done
 
-  echo "Usage: ./$SCRIPT_EXECUTION_PATH [<option=value>...]"
+  echo "Usage: $SCRIPT_EXECUTION_PATH [<option=value>...]"
   echo -e "\t[<option[=value>...]]: one or more options"
   echo -e "\t\t-h, --help: print help"
   echo -e "\t\t-len, --key-length: key length in bytes (not for ES algorithm)"
@@ -24,7 +24,7 @@ printUsageThenDie() {
   echo -e "\t\t-alg, --algorithm: JWT algorithm (HS is not supported yet, it's a symmetric encryption)"
   echo -e "\t\t\t$JWT_ALGORITHMS"
   echo
-  echo "Example: ./$SCRIPT_EXECUTION_PATH --algorithm=RS256 --key-length=2048 --file=key_rsa256"
+  echo "Example: $SCRIPT_EXECUTION_PATH --algorithm=RS256 --key-length=2048 --file=key_rsa256"
   echo
   echo "For safety reason this script generates encryption keys and put those keys in the same directory where this script lives"
   echo
