@@ -16,9 +16,9 @@ DEF_FG_OPTS="--color=java"
 printUsageThenDie() {
   EXIT_CODE=$1
 
-  echo "Usage: $SCRIPT_EXECUTION_PATH --pid=<pid> [<option=value>...]"
+  echo "Usage: $SCRIPT_EXECUTION_PATH --flamegraph-repository=<path/to/FlameGraph/repo> --pid=<pid> [<option=value>...]"
   echo
-  echo "Description: render flame graph for java process"
+  echo "Description: render flame graph for java process using jstack for stack capturing, suitable when your machine doesn't have perf or dtrace"
 
   echo -e "\tRequired arguments"
   echo -e "\t\t-fg-repo, --flamegraph-repository: path to the FlameGraph repository (https://github.com/brendangregg/FlameGraph.git)"
@@ -26,11 +26,13 @@ printUsageThenDie() {
 
   echo -e "\t[<option[=value>...]]: one or more options"
   echo -e "\t\t-h, --help: print help"
-  echo -e "\t\t-jh, --java-home: the JAVA_HOME to use, default: the JAVA_HOME environment variable"
-  echo -e "\t\t-s, --samples: number of samples to capture, default: $DEF_N_SAMPLES"
-  echo -e "\t\t-i, --interval: sample capturing interval, same as the NUMBER argument of the 'sleep' command (https://man7.org/linux/man-pages/man1/sleep.1.html), default: $DEF_INTERVAL"
-  echo -e "\t\t-fg-opts, --flamegraph-options: flamegraph.pl's options (https://github.com/brendangregg/FlameGraph?tab=readme-ov-file#options), default: $DEF_FG_OPTS"
-  echo -e "\t\t-f, --file: the output svg filename, default: <pid>$DEF_FILE_POSTFIX"
+  echo -e "\t\t-jh, --java-home: the JAVA_HOME to use (default: the JAVA_HOME environment variable)"
+  echo -e "\t\t-s, --samples: number of samples to capture (default: $DEF_N_SAMPLES)"
+  echo -e "\t\t-i, --interval: sample capturing interval, same as the NUMBER argument,of the 'sleep' command (https://man7.org/linux/man-pages/man1/sleep.1.html) (default: $DEF_INTERVAL)"
+  echo -e "\t\t-ks, --keep-stacks: keep the stack-captured file"
+  echo -e "\t\t-kf, --keep-folded: keep the stack-folded file, useful for generating differential flame graph (https://www.brendangregg.com/blog/2014-11-09/differential-flame-graphs.html)"
+  echo -e "\t\t-fg-opts, --flamegraph-options: flamegraph.pl's options (https://github.com/brendangregg/FlameGraph?tab=readme-ov-file#options) (default: $DEF_FG_OPTS)"
+  echo -e "\t\t-f, --file: the output svg filename (default: <pid>$DEF_FILE_POSTFIX)"
   echo
   echo "Example:
   $SCRIPT_EXECUTION_PATH \\
@@ -39,6 +41,8 @@ printUsageThenDie() {
     --java-home=~/.sdkman/candidates/java/17.0.10-tem \\
     --samples=1000 \\
     --interval=0.01 \\
+    --keep-stacks \\
+    --keep-folded \\
     --flamegraph-options='--title=\"Flame Graph: java --flamechart\"' \\
     --file=flamegraph.svg"
   echo
@@ -61,6 +65,10 @@ for OPTION in "${ARGS[@]}"; do
     IN_N_SAMPLES=$(echo "$OPTION" | cut -d '=' -f 2-)
   elif [[ $OPTION =~ ^-i=.* || $OPTION =~ ^--interval=.* ]]; then
     IN_INTERVAL=$(echo "$OPTION" | cut -d '=' -f 2-)
+  elif [[ $OPTION =~ ^-ks$ || $OPTION =~ ^--keep-stacks$ ]]; then
+    KEEP_STACKS=true
+  elif [[ $OPTION =~ ^-kf$ || $OPTION =~ ^--keep-folded$ ]]; then
+    KEEP_FOLDED=true
   elif [[ $OPTION =~ ^-fg-opts=.* || $OPTION =~ ^--flamegraph-options=.* ]]; then
     IN_FG_OPTS=$(echo "$OPTION" | cut -d '=' -f 2-)
   elif [[ $OPTION =~ ^-h$ || $OPTION =~ ^--help$ ]]; then
@@ -156,8 +164,10 @@ info() {
   echo "FlameGraph repository: $FG_REPO"
   echo "Process id: $PID"
   echo "JAVA_HOME: $USED_JAVA_HOME"
-  echo "# of samples: $N_SAMPLES"
+  echo "Number of samples: $N_SAMPLES"
   echo "Interval: $INTERVAL"
+  echo "Keep stacks file: ${KEEP_STACKS:=false}"
+  echo "Keep folded file: ${KEEP_FOLDED:=false}"
   echo "flamegraph.pl's options: $FG_OPTS"
   echo "================================="
   echo
@@ -193,16 +203,18 @@ echo
 # --- Render flamegraph ---
 
 echo -e "\033[1m> Rendering flamegraph\033[0m"
+FOLDED_FILE="${FLAME_GRAPH_FILE%.*}.folded"
+"$FG_REPO/stackcollapse-jstack.pl" "$JSTACK_FILE" > "$FOLDED_FILE" 2>/dev/null
 # shellcheck disable=SC2086 # word splitting on purpose on FG_OPTS variable
-"$FG_REPO/stackcollapse-jstack.pl" "$JSTACK_FILE" 2>/dev/null | \
-  "$FG_REPO/flamegraph.pl" $FG_OPTS > "$FLAME_GRAPH_FILE"
+"$FG_REPO/flamegraph.pl" $FG_OPTS "$FOLDED_FILE" > "$FLAME_GRAPH_FILE"
 echo "Flamegraph file: $FLAME_GRAPH_FILE"
 echo
 
 # --- Clean up ---
 
 echo -e "\033[1m> Cleaning up\033[0m"
-rm -vf "$JSTACK_FILE"
+[[ $KEEP_STACKS != true ]] && rm -vf "$JSTACK_FILE"
+[[ $KEEP_FOLDED != true ]] && rm -vf "$FOLDED_FILE"
 echo
 
 # ---
