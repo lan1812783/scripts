@@ -18,9 +18,9 @@ function notify() {
 
 notify 'Starts...'
 
-# Needs 2>&1 because 'time' command writes statistics to STDERR
+# Needs 2>&1 at the end because 'time' command writes statistics to STDERR
 # Ref: https://askubuntu.com/a/1263469
-ELAPSED=$(TIMEFORMAT=%R; (time $CMD) 2>&1)
+ELAPSED=$(TIMEFORMAT=%R; (time $CMD 1>/dev/null 2>&1) 2>&1)
 
 EXIT_CODE=$?
 if [[ $EXIT_CODE == 0 ]]; then
