@@ -48,8 +48,12 @@ ELAPSED=$(echo "$OUTPUT" | tail -n 1)
 OUTPUT=$(echo "$OUTPUT" | head -n -1)
 normalizeSec "${ELAPSED/,/.}"
 
+SCRIPT_NAME=$(basename "$0")
+LOG_PATH=/tmp/${SCRIPT_NAME%.*}.log
+DATE=$(date '+%d-%m-%Y %H:%M:%S')
 if [[ $EXIT_CODE == 0 ]]; then
-  notify "Done!\nElapsed: $NORMALIZED_TIME.${OUTPUT:+\nOutput: $OUTPUT.}"
+  echo "$DATE - SUCCEEDED - $NORMALIZED_TIME${OUTPUT:+ - $OUTPUT}" >> "$LOG_PATH"
 else
-  notify "Failed!\nExit code: $EXIT_CODE.\nElapsed: $NORMALIZED_TIME.${OUTPUT:+\nOutput: $OUTPUT.}"
+  echo "$DATE - FAILED (EXIT_CODE: $EXIT_CODE) - $NORMALIZED_TIME${OUTPUT:+ - $OUTPUT}" >> "$LOG_PATH"
 fi
+notify "$([[ $EXIT_CODE == 0 ]] && echo 'Done' || echo 'Failed')!\nElapsed: $NORMALIZED_TIME.${OUTPUT:+\nLog: $LOG_PATH.}"
